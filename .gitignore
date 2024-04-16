@@ -1,0 +1,4 @@
+__pycache__/
+diploma_project.egg-info/
+photos/
+src/diploma/models/recognition/weights/
