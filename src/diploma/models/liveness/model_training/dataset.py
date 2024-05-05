@@ -23,5 +23,10 @@ class PersonDataset(Dataset):
         label = self.df.iloc[index]["label"]
         return image, label
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Get the total number of images in the dataset.
+
+        Returns:
+            int: Total number of images in the dataset.
+        """
         return len(self.df)

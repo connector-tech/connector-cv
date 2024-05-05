@@ -28,7 +28,8 @@ class FaceRecONNX:
     def __preprocess(self, image):
         work_image = cv2.resize(image, (112, 112))[:, :, ::-1]
         work_image = np.transpose(work_image, (2, 0, 1))
-        work_image = work_image.astype(np.float32)
+        work_image = np.expand_dims(work_image, 0)
+        work_image = np.float32(((work_image / 255.0) - 0.5) / 0.5)
         return work_image
 
     def __call__(self, image: np.ndarray) -> np.ndarray:
@@ -43,6 +44,6 @@ class FaceRecONNX:
         """
         work_image = self.__preprocess(image)
         embedding = self.onnx_session.run(
-            None, {self.onnx_session.get_inputs()[0].name: work_image[None, ...]}
-        )[0]
-        return embedding
+            None, {self.onnx_session.get_inputs()[0].name: work_image}
+        )[0][0]
+        return embedding[None, ...]

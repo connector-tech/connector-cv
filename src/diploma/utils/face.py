@@ -72,7 +72,6 @@ def align_face(
         len(point) == 2 for point in landmarks
     ), "Incorrect shape for landmarks"
     assert len(bbox) == 4, "Incorrect shape for bbox"
-
     if margin is None:
         margin = image_size[0]
     bigger_box = apply_margin(original_img, bbox, margin)

@@ -1,3 +1,3 @@
-from .detector_onnx import FaceDetector
+from .detector_onnx import FaceDetectorONNX
 
-__all__ = [FaceDetector]
+__all__ = [FaceDetectorONNX]

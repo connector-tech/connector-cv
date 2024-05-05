@@ -14,7 +14,7 @@ def draw_landmarks(
     text: Optional[str] = None,
     color: Optional[Iterable[int]] = (0, 0, 255),
     radius: int = 1,
-    thickness: float = 5,
+    thickness: float = 3,
 ) -> np.ndarray:
     """
     Draw landmarks on an image.
@@ -65,7 +65,7 @@ def draw_rectangles(
     margin: Optional[int] = None,
     override: bool = False,
     color: Optional[Iterable[int]] = (0, 0, 255),
-    thickness: float = 5,
+    thickness: float = 3,
 ) -> np.ndarray:
     """
     Draws bbox on image. Bbox points are [x1, y1, x2, y2].

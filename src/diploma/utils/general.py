@@ -95,25 +95,6 @@ def sigmoid(x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
     return 1.0 / (1.0 + np.exp(-x))
 
 
-def convert_b64_to_image(image_b64_string: str) -> np.ndarray:
-    """
-    This function takes in a base64 encoded image string and returns it as a
-        numpy array that represents the image.
-
-    Args:
-        image_b64_string (str): A string representing a base64 encoded image.
-
-    Returns:
-        np.ndarray: A numpy array representing the decoded image.
-    """
-    image_b64_enc = bytes(image_b64_string, "utf-8")
-    image_b64_dec = base64.b64decode(image_b64_enc)
-    img_arr = np.frombuffer(image_b64_dec, dtype=np.uint8)
-    img = cv2.imdecode(img_arr, flags=cv2.IMREAD_COLOR)
-
-    return img
-
-
 class HelpMeta(type):
     """
     Metaclass that adds a 'help' method to classes, which prints information

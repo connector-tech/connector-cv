@@ -36,12 +36,11 @@ def apply_margin(
         raise ValueError(
             "Invalid margin_type. It should be either 'pixelwise' or 'percentage'."
         )
-
     return [
         int(max(box[0] - dx, 0)),
         int(max(box[1] - dy, 0)),
-        int(min(box[2] + dx, img_shape[1])),
-        int(min(box[3] + dy, img_shape[0])),
+        int(min(box[2] + dx, img_shape.shape[1])),
+        int(min(box[3] + dy, img_shape.shape[0])),
     ]
 
 

@@ -13,8 +13,8 @@ from torch.utils.data import DataLoader
 
 # from sklearn.model_selection import train_test_split
 
-from dataset import PersonDataset
-from utils import (
+from .dataset import PersonDataset
+from .utils import (
     calculate_metrics,
     calculate_roc_auc,
     calculate_average_precision,
