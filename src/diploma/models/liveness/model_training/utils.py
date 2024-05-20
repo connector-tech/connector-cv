@@ -1,88 +1,103 @@
 import torch
 
-from sklearn.metrics import roc_auc_score
 from sklearn.metrics import average_precision_score
+from sklearn.metrics import roc_auc_score
 
 
 def calculate_metrics(outputs, labels):
     """
-    Calculates accuracy, precision, recall, and F1-score.
+    Calculates accuracy, precision, recall, and F1-score for binary classification.
 
     Args:
-        outputs (torch.Tensor): Model outputs.
-        labels (torch.Tensor): Ground truth labels.
+        outputs (torch.Tensor): Model outputs (logits or probabilities).
+        labels (torch.Tensor): Ground truth labels (0 or 1).
 
     Returns:
-        tuple: Accuracy, precision, recall, F1-score.
+        tuple: (accuracy, precision, recall, f1_score)
     """
-    with torch.no_grad():
-        predictions = torch.round(torch.sigmoid(outputs))
-        correct = (predictions == labels).sum().float()
-        accuracy = correct / len(labels)
 
-        tp = (predictions & labels).sum().float()
-        tn = ((~predictions) & (~labels)).sum().float()
-        fp = (predictions & (~labels)).sum().float()
-        fn = ((~predictions) & labels).sum().float()
+    threshold = 0.5
+    predictions = (outputs > threshold).float()
 
-        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-        f1_score = (
-            2 * (precision * recall) / (precision + recall)
-            if (precision + recall) > 0
-            else 0.0
-        )
+    accuracy = (predictions == labels).float().mean()
 
-        return accuracy, precision, recall, f1_score
+    num_positives = torch.sum(labels)
+    num_predicted_positives = torch.sum(predictions)
+    if num_positives > 0 and num_predicted_positives > 0:
+        precision = torch.sum(predictions * labels).float() / num_predicted_positives
+        recall = torch.sum(predictions * labels).float() / num_positives
+        f1_score = 2 * (precision * recall) / (precision + recall)
+    else:
+        precision = torch.tensor(0.0)
+        recall = torch.tensor(0.0)
+        f1_score = torch.tensor(0.0)
+
+    return accuracy, precision, recall, f1_score
+
+
+def calculate_confusion_matrix(outputs, labels):
+    """
+    Calculates the confusion matrix for binary classification.
+
+    Args:
+        outputs (torch.Tensor): Model outputs (logits or probabilities).
+        labels (torch.Tensor): Ground truth labels (0 or 1).
+
+    Returns:
+        torch.Tensor: Confusion matrix (2x2) with integer counts.
+    """
+    labels = labels.to(outputs.device)
+    threshold = 0.5
+    predictions = (outputs > threshold).int()
+
+    if not labels.dtype in (torch.long, torch.int):
+        labels = labels.long()
+
+    cm = torch.zeros((2, 2), dtype=torch.int64, device=labels.device)
+
+    for i in range(len(labels)):
+        cm[labels[i], predictions[i]] += 1
+
+    return cm
 
 
 def calculate_roc_auc(outputs, labels):
     """
-    Calculates the Receiver Operating Characteristic (ROC) AUC score.
+    Calculates the Receiver Operating Characteristic (ROC) Area Under Curve (AUC).
 
     Args:
-        outputs (torch.Tensor): Model outputs.
+        outputs (torch.Tensor): Model outputs (logits).
         labels (torch.Tensor): Ground truth labels.
 
     Returns:
         float: ROC AUC score.
     """
-    with torch.no_grad():
-        predictions = torch.sigmoid(outputs)
-        return roc_auc_score(labels.cpu().numpy(), predictions.cpu().numpy())
+    outputs = outputs.cpu().detach()
+    labels = labels.cpu().detach()
+
+    labels = labels.long()
+
+    roc_auc = roc_auc_score(labels, outputs)
+
+    return roc_auc
 
 
 def calculate_average_precision(outputs, labels):
     """
-    Calculates the average precision score.
+    Calculates the Average Precision (AP) using the scikit-learn implementation.
 
     Args:
-        outputs (torch.Tensor): Model outputs.
+        outputs (torch.Tensor): Model outputs (logits).
         labels (torch.Tensor): Ground truth labels.
 
     Returns:
-        float: Average precision score.
+        float: Average Precision score.
     """
-    with torch.no_grad():
-        predictions = torch.sigmoid(outputs)
-        return average_precision_score(labels.cpu().numpy(), predictions.cpu().numpy())
+    outputs = outputs.cpu().detach()
+    labels = labels.cpu().detach()
 
+    labels = labels.long()
 
-def calculate_confusion_matrix(outputs, labels):
-    """
-    Calculates the confusion matrix.
+    average_precision = average_precision_score(labels, outputs)
 
-    Args:
-        outputs (torch.Tensor): Model outputs.
-        labels (torch.Tensor): Ground truth labels.
-
-    Returns:
-        torch.Tensor: Confusion matrix.
-    """
-    with torch.no_grad():
-        predictions = torch.round(torch.sigmoid(outputs))
-        tn = ((~predictions) & (~labels)).sum().int()
-        fp = (predictions & (~labels)).sum().int()
-        fn = ((~predictions) & labels).sum().int()
-        tp = (predictions & labels).sum().int()
-        return torch.tensor([[tn, fp], [fn, tp]])
+    return average_precision

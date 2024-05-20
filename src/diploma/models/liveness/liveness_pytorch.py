@@ -1,133 +1,54 @@
-from typing import Any
-
-import timm
 import torch
-import numpy as np
-from torch import nn
-
-from diploma.utils import HelpMeta
-
-from .preprocess import preprocess
-
-mean = np.array([0.485, 0.456, 0.406])
-std = np.array([0.229, 0.224, 0.225])
+import torch.nn as nn
+import albumentations as A
+import torchvision.models as models
 
 
-class LivenessModel(torch.nn.Module):
-    "This class defines a efficientnet_b3 neural network for image classification tasks."
+class LivenessPytorch:
+    def __init__(self, model_file, device="cpu", threshold=0.5):
+        """_summary_
 
-    def __init__(
-        self,
-        in_channels: int,
-        out_channels: int,
-        backbone_out_channels: int = 1000,
-    ) -> None:
-        """
-        Args:
-            in_channels (int): Number of input channels for the input image.
-            out_channels (int): Number of output channels/classes for classification.
-            backbone_out_channels (int, optional): Number of output channels from the
-                backbone network's classifier layer. Defaults to 1000.
-        """
-        super(LivenessModel, self).__init__()
-        self.input = nn.Conv2d(in_channels, 3, 1)
-        self.backbone = timm.create_model("efficientnet_b3", False)
-        self.backbone.classifier = nn.Linear(
-            self.backbone.classifier.in_features, backbone_out_channels, bias=True
-        )
-        self.output = nn.Linear(backbone_out_channels, out_channels)
-
-    def forward(self, x: torch.Tensor):
-        """
-        Forward pass through the model.
-
-        Args:
-            x (torch.Tensor): Input tensor.
-        """
-        x = self.input(x)
-        x = self.backbone(x)
-        x = self.output(x)
-        return x.view(-1)
-
-
-class LivenessPytorch(torch.nn.Module, metaclass=HelpMeta):
-    "A wrapper class for a Pytorch model used for prediction."
-
-    def __init__(
-        self,
-        model_file: str,
-        device: str = "cpu",
-        fp16: bool = False,
-        imsize: int = 300,
-        normalize: bool = True,
-    ) -> None:
-        """
         Args:
             model_file (str): Path to the model checkpoint file.
             device (str, optional): Device to load the model onto("cpu", "cuda").
                 Defaults to "cpu".
-            fp16 (bool, optional): Whether to use half-precision floating-point format.
-                Defaults to False.
-            imsize (int, optional): Size to which input images are resized.
-                Defaults to 300.
-            normalize (bool, optional): Whether to normalize input images.
-                Defaults to True.
+            threshold (float, optional): Threshold. Defaults to 0.5.
         """
-        super().__init__()
-        self.model = LivenessModel(3, 1)
-
-        ckp = torch.load(model_file, map_location="cpu")["state_dict"]
-
-        self.load_state_dict(ckp)
-        self.to(device)
-        self.eval()
-        if fp16:
-            self.model.half()
-        self.imsize = imsize
+        self.model = models.efficientnet_b3()
+        self.model.classifier[1] = nn.Linear(self.model.classifier[1].in_features, 1)
+        self.model.load_state_dict(torch.load(model_file))
+        self.model.to(device)
+        self.model.eval()
         self.device = device
-        self.fp16 = fp16
-        self.normalize = normalize
+        self.threshold = threshold
+        self.imsize = 300
+        self.mean = [0.485, 0.456, 0.406]
+        self.std = [0.229, 0.224, 0.225]
+        self.transform = A.Compose(
+            [
+                A.Resize(self.imsize, self.imsize, p=1),
+                A.Normalize(mean=self.mean, std=self.std, p=1),
+            ]
+        )
 
-    @torch.inference_mode()
-    def predict_single(self, img: np.ndarray, rgb: bool = False) -> Any:
+    @torch.no_grad()
+    def __call__(self, image):
         """
-        Predict the output for a single input image.
+        Predicts whether an image is live or fake using the model's __call__ method.
 
         Args:
-            img (np.ndarray): Input image as a NumPy array.
-            rgb (bool, optional): Whether the image is in RGB format. Defaults to False.
+            image (np.ndarray): Input image as a NumPy array (H, W, C).
 
         Returns:
-            Any: Predicted output for the input image.
+            bool: True if the image is predicted to be live, False otherwise.
         """
-        work_img = preprocess(img, rgb, self.imsize, self.normalize)
-        img = torch.tensor(work_img, dtype=torch.float, device=self.device)
-        if self.fp16:
-            img = img.half()
-        with torch.cuda.amp.autocast(enabled=self.fp16):
-            return torch.sigmoid(self.forward(img)).item()
+        image = self.transform(image=image)["image"]
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of the model.
+        image = torch.tensor(image.transpose(2, 0, 1)).unsqueeze(0).float()
+        image = image.to(self.device)
+        output = self.model(image)
 
-        Args:
-            x (torch.Tensor): Input tensor.
+        output = torch.sigmoid(output).item()
 
-        Returns:
-            torch.Tensor: Model's output tensor.
-        """
-        return self.model(x)
-
-    def __call__(self, img: np.ndarray, rgb: bool = False) -> Any:
-        """
-        Call the model to predict the output for an input image.
-
-        Args:
-            img (np.ndarray): Input image as a NumPy array.
-            rgb (bool, optional): Whether the is in RGB format. Defaults to False.
-
-        Returns:
-            Any: Predicted output for the input image.
-        """
-        return self.predict_single(img, rgb)
+        # output = self.model(image)
+        return output

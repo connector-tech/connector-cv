@@ -13,8 +13,8 @@ from torch.utils.data import DataLoader
 
 # from sklearn.model_selection import train_test_split
 
-from .dataset import PersonDataset
-from .utils import (
+from diploma.models.liveness.model_training.dataset import PersonDataset
+from diploma.models.liveness.model_training.utils import (
     calculate_metrics,
     calculate_roc_auc,
     calculate_average_precision,
@@ -93,9 +93,11 @@ def train(config_path, log_dir):
     )
 
     # nado budet posmetret drugie variki elsi ne budet hvatat
-    model = models.mobilenet_v2(weights=WEIGHTS)
+    # model = models.mobilenet_v2(weights=WEIGHTS)
     # model = models.efficientnet_b0(weights=WEIGHTS)
-    # model = model.half() - po idee naxyi ne nado
+    model = models.efficientnet_b3(weights=WEIGHTS)
+    # model = model.half()  # - po idee naxyi ne nado
+
     model.classifier[1] = nn.Linear(model.classifier[1].in_features, 1)
     model.to(device)
 
@@ -227,7 +229,7 @@ def train(config_path, log_dir):
 
 
 if __name__ == "__main__":
-    config_path = "E:/Diploma/FraudDetection/config.yaml"
-    log_dir = "E:/Diploma/FraudDetection/logs"
+    config_path = "E:/kbtu_courses/diploma_project/src/diploma/models/liveness/model_training/config.yaml"
+    log_dir = "E:/kbtu_courses/diploma_project/src/diploma/models/liveness/model_training/logs"
 
     train(config_path, log_dir)

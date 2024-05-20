@@ -24,9 +24,4 @@ class PersonDataset(Dataset):
         return image, label
 
     def __len__(self) -> int:
-        """Get the total number of images in the dataset.
-
-        Returns:
-            int: Total number of images in the dataset.
-        """
         return len(self.df)

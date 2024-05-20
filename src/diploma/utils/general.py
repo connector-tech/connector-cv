@@ -1,8 +1,6 @@
-import base64
 import inspect
 from typing import List, Optional, Tuple, Type, Union
 
-import cv2
 import torch
 import numpy as np
 

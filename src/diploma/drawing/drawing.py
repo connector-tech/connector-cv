@@ -65,7 +65,7 @@ def draw_rectangles(
     margin: Optional[int] = None,
     override: bool = False,
     color: Optional[Iterable[int]] = (0, 0, 255),
-    thickness: float = 3,
+    thickness: float = 1,
 ) -> np.ndarray:
     """
     Draws bbox on image. Bbox points are [x1, y1, x2, y2].
@@ -132,4 +132,4 @@ def draw_images(
         plt.imshow(image)
         plt.xticks([])
         plt.yticks([])
-        plt.xlabel(i + start_index)
+        # plt.xlabel(i + start_index)

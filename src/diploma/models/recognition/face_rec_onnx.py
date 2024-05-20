@@ -21,9 +21,7 @@ class FaceRecONNX:
         super().__init__()
 
         providers = get_providers(device)
-        self.onnx_session = onnxruntime.InferenceSession(
-            model_file, providers=providers
-        )
+        self.session = onnxruntime.InferenceSession(model_file, providers=providers)
 
     def __preprocess(self, image):
         work_image = cv2.resize(image, (112, 112))[:, :, ::-1]
@@ -43,7 +41,7 @@ class FaceRecONNX:
             np.ndarray: embedding with shape (1, 512)
         """
         work_image = self.__preprocess(image)
-        embedding = self.onnx_session.run(
-            None, {self.onnx_session.get_inputs()[0].name: work_image}
+        embedding = self.session.run(
+            None, {self.session.get_inputs()[0].name: work_image}
         )[0][0]
         return embedding[None, ...]

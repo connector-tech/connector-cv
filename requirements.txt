@@ -1,0 +1,8 @@
+opencv-python==4.9.0
+onnxruntime==1.17.1
+numpy==1.24.4
+pandas==2.0.3
+torch==2.2.2
+onnx==1.16.0
+scikit-image==0.23.1
+scikit-learn==1.4.2

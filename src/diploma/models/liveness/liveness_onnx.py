@@ -1,11 +1,11 @@
 from typing import Optional
 
+import cv2
 import numpy as np
 import onnxruntime
+import albumentations as A
 
 from diploma.utils import HelpMeta, get_providers, sigmoid
-
-from .preprocess import preprocess
 
 
 class LivenessONNX(metaclass=HelpMeta):
@@ -15,7 +15,6 @@ class LivenessONNX(metaclass=HelpMeta):
         self,
         model_file: Optional[str] = None,
         imsize: int = 300,
-        normalize: bool = True,
         device: str = "cpu",
     ) -> None:
         """
@@ -23,28 +22,39 @@ class LivenessONNX(metaclass=HelpMeta):
             model_file (Optional[str], optional): Path to the model weights.
             imsize (int, optional): Size to which input images are resized.
                 Defaults to 300.
-            normalize (bool, optional): Whether to normalize an input images.
-                Defaults to True.
             device (str, optional): Device to run the inference('cpu', 'cuda', 'cuda:1').
                 Defaults to "cpu".
         """
+        super().__init__()
 
         self.imsize = imsize
-        self.normalize = normalize
+        self.mean = np.array([0.485, 0.456, 0.406])
+        self.std = np.array([0.229, 0.224, 0.225])
+
         providers = get_providers(device)
         self.session = onnxruntime.InferenceSession(model_file, providers=providers)
 
-    def __call__(self, img: np.ndarray, rgb: bool = False) -> float:
+        self.transform = A.Compose(
+            [
+                A.Resize(self.imsize, self.imsize, p=1),
+                A.Normalize(mean=self.mean, std=self.std, p=1),
+            ]
+        )
+
+    def __call__(self, image: np.ndarray) -> float:
         """
         Perform inference using the LivenessONNX model.
 
         Args:
-            img (np.ndarray): Input image as  a Numpy array.
-            rgb (bool, optional): Whether the image is in RGB format. Defaults to False.
+            image (np.ndarray): Input image as  a Numpy array.
 
         Returns:
             float: Inference result for the input image.
         """
-        work_img = preprocess(img, rgb, self.imsize, self.normalize).astype(np.float32)
-        outputs = self.session.run(None, {"input.1": work_img})[0][0]
-        return sigmoid(outputs)
+        image = self.transform(image=image)["image"]
+
+        image = image.transpose((2, 0, 1))
+
+        output = self.session.run([], input_feed={"input.1": image[None, :, :, :]})[0]
+
+        return sigmoid(output)[0][0]
