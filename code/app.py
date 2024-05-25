@@ -24,15 +24,13 @@ async def lifespan(app: FastAPI):
                 region=settings.aws_region,
             ),
         )
-        detector_model, recognition_model, liveness_model = await asyncio.gather(
+
+        detector_model, liveness_model = await asyncio.gather(
             S3.get_model('models/model_detector.onnx'),
-            S3.get_model('models/model_recognition.onnx'),
             S3.get_model('models/model_liveness.onnx'),
         )
-        #
-        # detector_model = 'models/model_detector.onnx'
-        # recognition_model = 'models/model_recognition.onnx'
-        # liveness_model = 'models/model_liveness.onnx'
+
+        recognition_model = await S3.get_model('models/model_recognition.onnx')
 
         FaceDetectorONNX(detector_model)
         FaceRecONNX(recognition_model)
