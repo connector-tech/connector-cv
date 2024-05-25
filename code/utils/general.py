@@ -1,9 +1,7 @@
-import base64
 import inspect
 from typing import List, Optional, Tuple, Type, Union
 
 import cv2
-import torch
 import numpy as np
 
 
@@ -33,52 +31,6 @@ def get_providers(device: str) -> List[Tuple[str, Optional[dict]]]:
         ]
 
     return providers
-
-
-def to_numpy(array: Union[torch.Tensor, np.ndarray]) -> np.ndarray:
-    """
-    Convert input array data to a NumPy array.
-
-    Args:
-        array (Union[torch.Tensor, np.ndarray]): Input array data as a tensor or
-            Numpy array.
-
-    Returns:
-        np.ndarray: Converted NumPy array.
-    """
-    if torch.is_tensor(array):
-        return array.cpu().detach().numpy()
-    elif isinstance(array, list):
-        return np.array(array)
-    else:
-        return array
-
-
-def minmax(
-    img: Union[torch.Tensor, np.ndarray], asint: bool = False
-) -> Union[torch.Tensor, np.ndarray]:
-    """
-    Normalize the input image to have values in the range [0, 1] or [0, 255].
-
-    Args:
-        img (Union[torch.Tensor, np.ndarray]): Input image data as a tensor or np.ndarray.
-        asint (bool, optional): If True, the output image values will be
-            scaled to [0, 255] and converted to integers. Defaults to False.
-
-    Returns:
-        Union[torch.Tensor, np.ndarray]: Normalized image data.
-    """
-    img = img - img.min()
-    if img.max() != 0:
-        img = img / img.max()
-    if asint:
-        img = img * 255
-        if type(img) is torch.Tensor:
-            img = img.long()
-        else:
-            img = img.astype("uint8")
-
-    return img
 
 
 def sigmoid(x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
@@ -130,7 +82,7 @@ class HelpMeta(type):
             for name, func in instance.__class__.__dict__.items():
                 if not only_call or name == "__call__":
                     if not (
-                        callable(func) and hasattr(func, "__doc__") and func.__doc__
+                            callable(func) and hasattr(func, "__doc__") and func.__doc__
                     ):
                         continue
                     signature = inspect.signature(func)

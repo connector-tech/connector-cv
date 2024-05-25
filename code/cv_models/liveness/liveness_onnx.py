@@ -1,6 +1,5 @@
 from typing import Optional
 
-import cv2
 import numpy as np
 import onnxruntime
 import albumentations as A
@@ -35,6 +34,7 @@ class LivenessONNX(metaclass=HelpMeta):
         """
         if not hasattr(self, 'initialized'):
             super().__init__()
+            logger.info('Initializing LivenessONNX')
 
             self.imsize = imsize
             self.mean = np.array([0.485, 0.456, 0.406])
