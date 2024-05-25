@@ -25,9 +25,9 @@ async def lifespan(app: FastAPI):
             ),
         )
         detector_model, recognition_model, liveness_model = await asyncio.gather(
-            S3.get_model('cv_models/model_detector.onnx'),
-            S3.get_model('cv_models/model_recognition.onnx'),
-            S3.get_model('cv_models/model_liveness.onnx'),
+            S3.get_model('models/model_detector.onnx'),
+            S3.get_model('models/model_recognition.onnx'),
+            S3.get_model('models/model_liveness.onnx'),
         )
         #
         # detector_model = 'models/model_detector.onnx'
