@@ -1,0 +1,39 @@
+version: '3.8'
+
+x-common-variables:
+  &common-vars
+  S3_ACCESS_KEY_ID: '*'
+  S3_SECRET_ACCESS_KEY: '*'
+  S3_BUCKET_NAME: '*'
+  AWS_REGION: '*'
+  DATABASE_URL: postgres://postgres:postgres@cv-db/postgres
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    volumes:
+      - .:/app
+    environment:
+      <<: *common-vars
+    command: sh -c "python -m code.app"
+    ports:
+      - '8001:8000'
+    depends_on:
+      cv-db:
+        condition: service_healthy
+
+  cv-db:
+    image: postgres:alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 3s
+    ports:
+      - '5433:5432'
+
+networks:
+  default:
+    name: connector_network

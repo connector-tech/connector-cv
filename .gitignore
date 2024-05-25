@@ -6,3 +6,4 @@ data/
 liveness_v1.csv
 liveness_v2.csv
 logs/
+.idea
