@@ -2,3 +2,7 @@
 line-length=120
 target-version=['py310']
 skip-string-normalization=true
+[tool.aerich]
+tortoise_orm = "code.config.TORTOISE_CONFIG"
+location = "./migrations"
+src_folder = "./."
