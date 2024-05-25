@@ -25,9 +25,9 @@ async def lifespan(app: FastAPI):
             ),
         )
 
-        detector_model = '/app/models/model_detector.onnx'
-        liveness_model = '/app/models/model_liveness.onnx'
-        recognition_model = '/app/models/model_recognition.onnx'
+        detector_model = '/app/cv_models/model_detector.onnx'
+        liveness_model = '/app/cv_models/model_liveness.onnx'
+        recognition_model = '/app/cv_models/model_recognition.onnx'
 
         FaceDetectorONNX(detector_model)
         FaceRecONNX(recognition_model)
