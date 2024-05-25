@@ -20,7 +20,7 @@ class LivenessONNX(metaclass=HelpMeta):
 
     def __init__(
             self,
-            model_file: Optional[bytes] = None,
+            model_file: Optional[str] = None,
             imsize: int = 300,
             device: str = "cpu",
     ) -> None:

@@ -24,17 +24,6 @@ class S3:
         return cls._instance
 
     @classmethod
-    async def get_model(cls, model_path: str) -> bytes:
-        try:
-            model = await cls._instance.get_object(Bucket=cls._bucket_name, Key=model_path)
-            file = await model['Body'].read()
-        except Exception as e:
-            logger.info(f'Error occurred during getting model exc={e}')
-            raise e
-
-        return file
-
-    @classmethod
     async def upload_image(cls, file: bytes, path: str):
         try:
             await cls._instance.put_object(

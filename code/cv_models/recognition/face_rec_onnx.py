@@ -20,7 +20,7 @@ class FaceRecONNX:
             cls._instance = super(FaceRecONNX, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, model_file: bytes | None = None, device: str = "cpu"):
+    def __init__(self, model_file: str | None = None, device: str = "cpu"):
         """
         This is the model for face recognition.
 
