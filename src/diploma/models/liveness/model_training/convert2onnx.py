@@ -3,10 +3,10 @@ import torch.nn as nn
 import torchvision.models as models
 
 model_file = (
-    "E:/kbtu_courses/diploma_project/src/diploma/models/liveness/weights/liveness_v5.pt"
+    "E:/kbtu_courses/diploma_project/src/diploma/models/liveness/weights/liveness_v6.pt"
 )
 
-model = models.efficientnet_b3()
+model = models.efficientnet_b1()
 model.classifier[1] = nn.Linear(model.classifier[1].in_features, 1)
 model.load_state_dict(torch.load(model_file))
 model.eval()
@@ -17,7 +17,7 @@ try:
     torch.onnx.export(
         model,
         dummy_input,
-        "model_liveness.onnx",
+        "liveness_v3.onnx",
         export_params=True,
         opset_version=17,
     )

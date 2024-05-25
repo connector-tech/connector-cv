@@ -14,7 +14,7 @@ class LivenessPytorch:
                 Defaults to "cpu".
             threshold (float, optional): Threshold. Defaults to 0.5.
         """
-        self.model = models.efficientnet_b3()
+        self.model = models.efficientnet_b1()
         self.model.classifier[1] = nn.Linear(self.model.classifier[1].in_features, 1)
         self.model.load_state_dict(torch.load(model_file))
         self.model.to(device)

@@ -95,7 +95,7 @@ def train(config_path, log_dir):
     # nado budet posmetret drugie variki elsi ne budet hvatat
     # model = models.mobilenet_v2(weights=WEIGHTS)
     # model = models.efficientnet_b0(weights=WEIGHTS)
-    model = models.efficientnet_b3(weights=WEIGHTS)
+    model = models.efficientnet_b1(weights=WEIGHTS)
     # model = model.half()  # - po idee naxyi ne nado
 
     model.classifier[1] = nn.Linear(model.classifier[1].in_features, 1)
