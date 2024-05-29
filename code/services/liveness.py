@@ -38,7 +38,7 @@ class LivenessService:
             estimate_blur(self.crop)
         )
 
-        liveness_response = self.liveness_model(self.crop)
+        liveness_response = self.liveness_model(image)
 
         return bestframe_response, liveness_response
 
