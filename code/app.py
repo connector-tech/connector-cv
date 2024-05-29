@@ -43,6 +43,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan=lifespan,
     docs_url='/cv/docs/',
+    redoc_url='/cv/redoc/',
+    openapi_url='/cv/openapi.json',
 )
 
 app.add_middleware(
